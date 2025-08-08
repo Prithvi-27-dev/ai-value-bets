@@ -1,6 +1,7 @@
 streamlit
-requests
-selenium
-beautifulsoup4
 pandas
+requests
+beautifulsoup4
+yagmail
+keyring
 python-dotenv

@@ -1,39 +1,31 @@
-
 import streamlit as st
-from odds_scraper import get_odds
-from predictions import get_predictions
 import pandas as pd
+from predictions import get_predictions
+from odds_scraper import get_odds
+from email_sender import send_value_bets_email
 
-st.set_page_config(page_title="AI Value Bets", layout="centered")
+st.set_page_config(page_title="AI Value Bets", layout="wide")
+st.title("⚽ AI-Powered Value Bet Finder")
 
-st.title("⚽ AI-Powered Value Bets")
-st.markdown("Daily predictions + bookmaker odds to find the best betting opportunities.")
+with st.spinner("Fetching predictions and odds..."):
+    predictions = get_predictions()
+    odds = get_odds()
 
-# Load simulated data
-predictions = get_predictions()
-odds = get_odds()
+df_pred = pd.DataFrame(predictions)
+df_odds = pd.DataFrame(odds)
 
-# Merge predictions and odds
-value_bets = []
-for pred in predictions:
-    for odd in odds:
-        if pred["match"] == odd["match"] and pred["market"] == odd["market"] and pred["prediction"] == odd["outcome"]:
-            confidence = pred["confidence"]
-            bookmaker_odds = odd["odds"]
-            value = (bookmaker_odds * confidence) - 1
-            value_bets.append({
-                "Match": pred["match"],
-                "Market": pred["market"],
-                "Prediction": pred["prediction"],
-                "AI Confidence": f"{confidence:.0%}",
-                "Bookie Odds": bookmaker_odds,
-                "Value %": f"{value * 100:.1f}%",
-                "Value Bet?": "✅" if value > 0 else "❌"
-            })
+df = pd.merge(df_pred, df_odds, on=["Match", "Market"])
+df["AI Confidence"] = df["AI Confidence"].str.rstrip("%").astype(float)
+df["Value %"] = (df["AI Confidence"] / (df["Bookie Odds"].astype(float) * 100) * 10000).round(2)
+df["Value Bet?"] = df["Value %"].apply(lambda x: "✅" if x > 0 else "❌")
 
-if value_bets:
-    df = pd.DataFrame(value_bets)
-    st.success("🎯 Top Value Bets Today")
-    st.dataframe(df, use_container_width=True)
-else:
-    st.warning("No value bets found today.")
+st.subheader("🔍 Top Value Bets Today")
+st.dataframe(df[df["Value Bet?"] == "✅"].reset_index(drop=True), use_container_width=True)
+
+if st.button("📩 Send Email with Value Bets"):
+    matches = df[df["Value Bet?"] == "✅"].to_dict(orient="records")
+    success, msg = send_value_bets_email(matches)
+    if success:
+        st.success(msg)
+    else:
+        st.error(f"Failed to send email: {msg}")

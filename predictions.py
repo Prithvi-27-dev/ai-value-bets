@@ -1,7 +1,6 @@
-
 def get_predictions():
     return [
-        {"match": "Liverpool vs Man City", "market": "1X2", "prediction": "Liverpool", "confidence": 0.72},
-        {"match": "PSG vs Lyon", "market": "Over/Under 2.5", "prediction": "Over", "confidence": 0.81},
-        {"match": "Arsenal vs Chelsea", "market": "BTTS", "prediction": "Yes", "confidence": 0.65},
+        {"Match": "Liverpool vs Man City", "Market": "1X2", "Prediction": "Liverpool", "AI Confidence": "72%"},
+        {"Match": "PSG vs Lyon", "Market": "Over/Under 2.5", "Prediction": "Over", "AI Confidence": "81%"},
+        {"Match": "Real Madrid vs Barcelona", "Market": "BTTS", "Prediction": "Yes", "AI Confidence": "65%"}
     ]
