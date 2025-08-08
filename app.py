@@ -1,59 +1,39 @@
-# app.py
-# (Streamlit app content placeholder)
+
 import streamlit as st
+from odds_scraper import get_odds
+from predictions import get_predictions
 import pandas as pd
 
-st.set_page_config(page_title="AI Value Bets", layout="wide")
-st.title("⚽ AI-Powered Soccer Value Bets")
-st.markdown("This is a live demo using simulated AI predictions + bookmaker odds. Value bets are shown below 👇")
+st.set_page_config(page_title="AI Value Bets", layout="centered")
 
-# ---------------------
-# Simulated AI Predictions (from Predicd)
-ai_predictions = [
-    {"match": "Liverpool vs Man City", "market": "1X2", "prediction": "Liverpool", "confidence": 0.72},
-    {"match": "PSG vs Lyon", "market": "Over/Under 2.5", "prediction": "Over", "confidence": 0.81},
-    {"match": "Arsenal vs Chelsea", "market": "BTTS", "prediction": "Yes", "confidence": 0.65},
-    {"match": "Bayern vs Dortmund", "market": "1X2", "prediction": "Dortmund", "confidence": 0.62},
-    {"match": "Inter vs AC Milan", "market": "BTTS", "prediction": "No", "confidence": 0.56}
-]
+st.title("⚽ AI-Powered Value Bets")
+st.markdown("Daily predictions + bookmaker odds to find the best betting opportunities.")
 
-# ---------------------
-# Simulated Bookmaker Odds (from ValuePlus)
-bookie_odds = [
-    {"match": "Liverpool vs Man City", "market": "1X2", "outcome": "Liverpool", "odds": 2.10},
-    {"match": "PSG vs Lyon", "market": "Over/Under 2.5", "outcome": "Over", "odds": 1.90},
-    {"match": "Arsenal vs Chelsea", "market": "BTTS", "outcome": "Yes", "odds": 2.00},
-    {"match": "Bayern vs Dortmund", "market": "1X2", "outcome": "Dortmund", "odds": 2.60},
-    {"match": "Inter vs AC Milan", "market": "BTTS", "outcome": "No", "odds": 2.30}
-]
+# Load simulated data
+predictions = get_predictions()
+odds = get_odds()
 
-# ---------------------
-# Match predictions with odds and compute value
+# Merge predictions and odds
 value_bets = []
-
-for pred in ai_predictions:
-    for odd in bookie_odds:
-        if (
-            pred["match"] == odd["match"]
-            and pred["market"] == odd["market"]
-            and pred["prediction"] == odd["outcome"]
-        ):
-            value = (odd["odds"] * pred["confidence"]) - 1
+for pred in predictions:
+    for odd in odds:
+        if pred["match"] == odd["match"] and pred["market"] == odd["market"] and pred["prediction"] == odd["outcome"]:
+            confidence = pred["confidence"]
+            bookmaker_odds = odd["odds"]
+            value = (bookmaker_odds * confidence) - 1
             value_bets.append({
                 "Match": pred["match"],
                 "Market": pred["market"],
                 "Prediction": pred["prediction"],
-                "AI Confidence": round(pred["confidence"], 2),
-                "Bookie Odds": odd["odds"],
-                "Expected Value": round(value, 3),
+                "AI Confidence": f"{confidence:.0%}",
+                "Bookie Odds": bookmaker_odds,
+                "Value %": f"{value * 100:.1f}%",
                 "Value Bet?": "✅" if value > 0 else "❌"
             })
 
-# Convert to DataFrame
-df = pd.DataFrame(value_bets)
-
-if df.empty:
-    st.warning("No positive-value bets found today. Try again later.")
+if value_bets:
+    df = pd.DataFrame(value_bets)
+    st.success("🎯 Top Value Bets Today")
+    st.dataframe(df, use_container_width=True)
 else:
-    st.success(f"🎯 {len(df[df['Expected Value'] > 0])} high-value bets found!")
-    st.dataframe(df[df["Expected Value"] > 0].sort_values(by="Expected Value", ascending=False), use_container_width=True)
+    st.warning("No value bets found today.")
