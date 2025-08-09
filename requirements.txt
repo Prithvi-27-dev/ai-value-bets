@@ -1,0 +1,8 @@
+streamlit
+pandas
+requests
+beautifulsoup4
+yagmail
+keyring
+python-dotenv
+pytest
