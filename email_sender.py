@@ -4,6 +4,7 @@ from email.mime.multipart import MIMEMultipart
 import os
 from dotenv import load_dotenv
 
+
 load_dotenv()
 
 
@@ -11,6 +12,7 @@ def send_value_bets_email(matches):
     sender = os.getenv("GMAIL_ADDRESS")
     password = os.getenv("GMAIL_APP_PASSWORD")
     recipient = os.getenv("RECIPIENT_EMAIL", sender)
+    debug_flag = os.getenv("DEBUG_EMAIL", "0") == "1"
 
     if not sender or not password:
         return False, "Missing GMAIL_ADDRESS or GMAIL_APP_PASSWORD env vars."
@@ -38,13 +40,22 @@ def send_value_bets_email(matches):
     msg["Subject"] = subject
     msg.attach(MIMEText(body, "plain"))
 
+    # Safe debug print (masked addresses, lengths only)
+    safe_sender = sender[:3] + "…" + sender[-7:]
+    safe_recipient = recipient[:3] + "…" + recipient[-7:]
+    if debug_flag:
+        print(f"[DEBUG] Preparing to send email")
+        print(f"[DEBUG] From: {safe_sender}  To: {safe_recipient}")
+        print(f"[DEBUG] Subject: {subject}")
+        print(f"[DEBUG] Body lines: {len(lines)} (empty means sending fallback text)")
+
     try:
         with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            if debug_flag:
+                # Enable SMTP protocol debugging (no password is printed)
+                server.set_debuglevel(1)
             server.login(sender, password)
             server.sendmail(sender, [recipient], msg.as_string())
-        # Minimal debug line (safe to show in logs)
-        safe_sender = sender[:3] + "…" + sender[-7:]
-        safe_recipient = recipient[:3] + "…" + recipient[-7:]
         return True, f"Email sent successfully to {safe_recipient} from {safe_sender}. {len(lines)} lines."
     except Exception as e:
         return False, f"SMTP error: {e}"
