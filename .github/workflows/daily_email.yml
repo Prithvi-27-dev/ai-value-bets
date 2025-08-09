@@ -48,9 +48,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: 🔐 Create .env from GitHub Secrets
-        run: |
-          echo "GMAIL_ADDRESS=${{ secrets.GMAIL_ADDRESS }}"   >> .env
-          echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> .env
-          echo "RECIPIENT_EMAIL=${{ secrets.RECIPIENT_EMAIL }}" >> .env
+  run: |
+    echo "GMAIL_ADDRESS=${{ secrets.GMAIL_ADDRESS }}" >> .env
+    echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> .env
+    echo "RECIPIENT_EMAIL=${{ secrets.RECIPIENT_EMAIL }}" >> .env
       - name: 📬 Send daily email
         run: python run_email.py
