@@ -6,3 +6,4 @@ yagmail
 keyring
 python-dotenv
 pytest
+flake8
