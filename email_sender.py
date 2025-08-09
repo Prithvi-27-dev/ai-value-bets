@@ -44,7 +44,7 @@ def send_value_bets_email(matches):
     safe_sender = sender[:3] + "…" + sender[-7:]
     safe_recipient = recipient[:3] + "…" + recipient[-7:]
     if debug_flag:
-        print(f"[DEBUG] Preparing to send email")
+        print("[DEBUG] Preparing to send email")
         print(f"[DEBUG] From: {safe_sender}  To: {safe_recipient}")
         print(f"[DEBUG] Subject: {subject}")
         print(f"[DEBUG] Body lines: {len(lines)} (empty means sending fallback text)")
