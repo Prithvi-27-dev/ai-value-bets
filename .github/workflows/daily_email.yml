@@ -27,7 +27,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
       - name: 🧪 Run pytest
-        run: pytest -q
+        run: |
+          python -m compileall -q .
+          export PYTHONPATH=.
+          pytest -q -vv
 
   send_email:
     needs: tests
@@ -48,5 +51,6 @@ jobs:
         run: |
           echo "GMAIL_ADDRESS=${{ secrets.GMAIL_ADDRESS }}"   >> .env
           echo "GMAIL_APP_PASSWORD=${{ secrets.GMAIL_APP_PASSWORD }}" >> .env
+          echo "RECIPIENT_EMAIL=${{ secrets.RECIPIENT_EMAIL }}" >> .env
       - name: 📬 Send daily email
         run: python run_email.py
